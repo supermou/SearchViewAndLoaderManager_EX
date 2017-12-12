@@ -7,6 +7,8 @@ package com.example.ray.searchviewandloadermanager_ex.ui;
 此外, 此範例還使用SearchView去更新資料顯示的內容, 利用Uri提供的filter去所小顯示的範圍.
 
 Loader大部分都使與Cursor合併使用, 本例易是如此.
+
+Notice: 讀取連絡人權限必須開啟, 此程式並沒有做判斷, 執行時會因為沒有權限而被中止. 但可以在手機內先給與此程式讀取連絡人權限後再執行!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +24,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getFragmentManager().beginTransaction().add(R.id.fl_fragContent, new ContactsFragment());
+        getFragmentManager().beginTransaction().add(R.id.fl_fragContent, new ContactsFragment()).commit();
     }
 }
