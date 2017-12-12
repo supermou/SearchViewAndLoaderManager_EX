@@ -1,4 +1,4 @@
-package com.example.ray.searchviewandloadermanager_ex;
+package com.example.ray.searchviewandloadermanager_ex.ui;
 
 /*
 此範例展示使用Loader去讀取資料, 使用Cursor讀取搭配Loader的好處是避免UI被block或自己須要另外去處理讀取的thread.
@@ -12,11 +12,16 @@ Loader大部分都使與Cursor合併使用, 本例易是如此.
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.ray.searchviewandloadermanager_ex.R;
+import com.example.ray.searchviewandloadermanager_ex.fragment.ContactsFragment;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getFragmentManager().beginTransaction().add(R.id.fl_fragContent, new ContactsFragment());
     }
 }
