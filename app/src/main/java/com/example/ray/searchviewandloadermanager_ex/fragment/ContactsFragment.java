@@ -9,19 +9,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.*;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
 import com.example.ray.searchviewandloadermanager_ex.R;
+
+import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 
 /**
  * Created by Ray on 2017/12/12.
  */
 
-public class ContactsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class ContactsFragment extends Fragment implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor>{
 
     String mCurFilter;          //給連絡人使用的uri filter
     ListView listContacts;       //顯示資料的list view
@@ -38,7 +45,29 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
         mContactsAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_list_item_1, null, new String[]{Contacts.DISPLAY_NAME}, new int[]{android.R.id.text1}, 0);
         listContacts.setAdapter(mContactsAdapter);
 
+        //建立新的loader並給予0為id
         getLoaderManager().initLoader(0, null, this);
+
+        //此fragment具有option menu, 註冊!
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        //加入搜尋的menu, 易可以res/menu中製作再inflate
+        MenuItem searchItem = menu.add("Search");
+        searchItem.setIcon(android.R.drawable.ic_menu_search);
+        searchItem.setShowAsAction(SHOW_AS_ACTION_ALWAYS);
+
+        //建立一個search view做搜尋
+        SearchView searchView = new SearchView(getActivity());
+        searchView.setIconifiedByDefault(true);         //圖示化
+        searchView.setOnQueryTextListener(this);        //callback function也implement在此class, 因此傳this
+
+        //當search按鈕按下, 對應的action view為search view
+        searchItem.setActionView(searchView);
     }
 
     @Nullable
@@ -53,7 +82,7 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
         //這裡以讀取連絡人為範例
         Uri baseUri;
         if (mCurFilter != null) {
-            baseUri = Uri.withAppendedPath(Contacts.CONTENT_URI, Uri.encode(mCurFilter));       //若有uri filter, 設定uri的filter
+            baseUri = Uri.withAppendedPath(Contacts.CONTENT_FILTER_URI, Uri.encode(mCurFilter));       //若有uri filter, 設定uri的filter
         } else {
             baseUri = Contacts.CONTENT_URI;         //若沒有uri filer, 設定全部連絡人內容的uir
         }
@@ -78,5 +107,21 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mContactsAdapter.swapCursor(null);      //被關掉後, 資料swap成null. 知錢的資料會被系統自動刪除. 不要使用close function.
+    }
+
+    //SearchView被提交, 忽略.
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return true;
+    }
+
+    //SearchView字串改變. 更新Loader內容.
+    @Override
+    public boolean onQueryTextChange(String s) {
+        //重新設定uri filter, 若改變的自傳為null或空字串, 都會回傳true. 若不是空, 將使用者輸入的字串設定為新的uri filter.
+        mCurFilter = !TextUtils.isEmpty(s)? s : null;
+        //重新restart loader, 會重新執行onCreateLoader, 而此時uri filter不同了, 因此只顯示filter過後的連絡人.
+        getLoaderManager().restartLoader(0, null, this);
+        return true;
     }
 }
